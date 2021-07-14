@@ -1,0 +1,32 @@
+name: cd
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to dockerhub
+      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+    - name: Get the version
+      id: vars
+      run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+
+    - name: Build the tagged docker image
+      run: docker build . --file Dockerfile --tag thomis/elixir-docker:${{steps.vars.outputs.tag}}
+
+    - name: Push the tagged docker image
+      run: docker push thomis/elixir-docker:${{steps.vars.outputs.tag}}
+
+    - name: Build the latest docker image
+      run: docker build . --file Dockerfile --tag thomis/elixir-docker:latest
+
+    - name: Push the latest docker image
+      run: docker push thomis/elixir-docker:latest
