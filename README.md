@@ -1,2 +1,2 @@
 # elixir-centos
-Builds and uploads CentOS 8 based docker image with Erlang, Elixir, Phoenix, golang and nodejs installed
+Builds and uploads CentOS 8 based docker image with erlang, elixir, phoenix, golang and nodejs installed
