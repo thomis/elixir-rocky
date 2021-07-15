@@ -3,14 +3,8 @@ FROM centos:8
 LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
-# please update based on your needs
+# please update based availability
 ARG ASDF_VERSION=0.8.1
-ARG ERLANG_VERSION=24.0.3
-ARG ELIXIR_VERSION=1.12.2-otp-24
-ARG PHOENIX_VERSION=1.5.9
-ARG NODEJS_VERSION=16.4.2
-ARG NPM_VERSION=7.19.1
-ARG GOLANG_VERSION=1.16.6
 
 RUN yum update -y
 RUN yum -y install glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
@@ -35,19 +29,21 @@ RUN asdf plugin-add elixir
 RUN asdf plugin-add nodejs
 RUN asdf plugin-add golang
 
-RUN asdf install erlang ${ERLANG_VERSION}
-RUN asdf install elixir ${ELIXIR_VERSION}
+RUN asdf install erlang latest
+RUN asdf install elixir latest
 RUN bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
-RUN asdf install nodejs ${NODEJS_VERSION}
-RUN asdf install golang ${GOLANG_VERSION}
+RUN asdf install nodejs latest
+RUN asdf install golang latest
 
-RUN asdf global erlang ${ERLANG_VERSION}
-RUN asdf global elixir ${ELIXIR_VERSION}
-RUN asdf global nodejs ${NODEJS_VERSION}
-RUN asdf global golang ${GOLANG_VERSION}
+RUN asdf global erlang latest
+RUN asdf global elixir latest
+RUN asdf global nodejs latest
+RUN asdf global golang latest
 
 RUN mix local.rebar --force
 RUN mix local.hex --force
-RUN mix archive.install hex phx_new ${PHOENIX_VERSION} --force
+RUN mix archive.install hex phx_new --force
 
-RUN npm install -g npm@${NPM_VERSION}
+RUN npm install -g npm@$latest
+
+RUN asdf list && echo "npm $(npm -v)" && mix phx.new --version
