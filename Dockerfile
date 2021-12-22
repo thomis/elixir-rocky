@@ -31,7 +31,6 @@ RUN asdf plugin-add golang
 
 RUN asdf install erlang latest
 RUN asdf install elixir latest
-RUN bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
 RUN asdf install nodejs latest
 RUN asdf install golang latest
 
