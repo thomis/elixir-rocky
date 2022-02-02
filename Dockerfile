@@ -1,10 +1,10 @@
-FROM rockylinux:8
+FROM rockylinux:latest
 
 LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
 # please update based availability
-ARG ASDF_VERSION=0.8.1
+ARG ASDF_VERSION=0.9.0
 
 RUN yum update -y
 RUN yum -y install glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
