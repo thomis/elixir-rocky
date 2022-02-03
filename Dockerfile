@@ -6,8 +6,8 @@ LABEL version="1.0.0"
 # please update based availability
 ARG ASDF_VERSION=0.9.0
 
-RUN yum update -y
-RUN yum -y install glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
+RUN dnf -y upgrade
+RUN dnf -y install curl glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
 
 # UTF8 setting for elixir
 ENV LANG en_US.UTF-8
