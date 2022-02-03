@@ -30,7 +30,7 @@ RUN asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git
 RUN asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 RUN asdf plugin-add golang https://github.com/kennyp/asdf-golang.git
 
-RUN asdf install erlang latest
+RUN asdf install erlang 24.0
 RUN asdf install elixir latest
 RUN asdf install nodejs latest
 RUN asdf install golang latest
