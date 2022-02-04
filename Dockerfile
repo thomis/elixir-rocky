@@ -3,14 +3,11 @@ FROM rockylinux:latest
 LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
-# find command is not in rocky linux container ???
-COPY find /usr/bin
-
 # please update based availability
 ARG ASDF_VERSION=0.9.0
 
 RUN dnf -y upgrade
-RUN dnf -y install procps curl glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
+RUN dnf -y install findutils procps curl glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
 
 # UTF8 setting for elixir
 ENV LANG en_US.UTF-8
@@ -33,7 +30,7 @@ RUN asdf plugin add elixir https://github.com/asdf-vm/asdf-elixir.git
 RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 RUN asdf plugin add golang https://github.com/kennyp/asdf-golang.git
 
-RUN asdf install erlang 24.0
+RUN asdf install erlang latest
 RUN asdf install elixir latest
 RUN asdf install nodejs latest
 RUN asdf install golang latest
