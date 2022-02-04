@@ -3,6 +3,9 @@ FROM rockylinux:latest
 LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
+# find command is not in rocky linux container ???
+COPY find /usr/bin
+
 # please update based availability
 ARG ASDF_VERSION=0.9.0
 
@@ -47,3 +50,4 @@ RUN mix archive.install hex phx_new --force
 RUN npm install -g npm@$latest
 
 RUN asdf list && echo "npm $(npm -v)" && mix phx.new --version
+
