@@ -3,7 +3,7 @@
 # elixir-rocky
 Builds and uploads Rocky Linux based docker image with erlang, elixir, phoenix, golang and nodejs installed
 
-Docker Hub Repository: https://hub.docker.com/repository/docker/thomis/elixir-centos/general
+Docker Hub Repository: https://hub.docker.com/repository/docker/thomis/elixir-rocky
 
 ### Source repositories
 - erlang/otp https://github.com/erlang/otp
