@@ -37,7 +37,7 @@ RUN asdf install golang latest
 
 RUN asdf global erlang latest
 RUN asdf global elixir latest
-RUN asdf global nodejs latest
+RUN asdf global nodejs 17.6.0
 RUN asdf global golang latest
 
 RUN mix local.rebar --force
