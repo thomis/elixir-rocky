@@ -5,6 +5,7 @@ LABEL version="1.0.0"
 
 # please update based availability
 ARG ASDF_VERSION=0.9.0
+ARG NODEJS_VERSION=17.6.0
 
 RUN dnf -y upgrade
 RUN dnf -y install findutils procps curl glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
@@ -32,12 +33,12 @@ RUN asdf plugin add golang
 
 RUN asdf install erlang latest
 RUN asdf install elixir latest
-RUN asdf install nodejs latest
+RUN asdf install nodejs ${NODEJS_VERSION}
 RUN asdf install golang latest
 
 RUN asdf global erlang latest
 RUN asdf global elixir latest
-RUN asdf global nodejs 17.6.0
+RUN asdf global nodejs ${NODEJS_VERSION}
 RUN asdf global golang latest
 
 RUN mix local.rebar --force
