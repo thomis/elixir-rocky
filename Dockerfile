@@ -5,7 +5,7 @@ LABEL version="1.0.0"
 
 # please update based availability
 ARG ASDF_VERSION=0.9.0
-ARG NODEJS_VERSION=17.6.0
+ARG NODEJS_VERSION=latest
 
 RUN dnf -y upgrade
 RUN dnf -y install findutils procps curl glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip python2
