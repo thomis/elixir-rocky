@@ -11,7 +11,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Login to dockerhub
       run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
