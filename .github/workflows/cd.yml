@@ -16,15 +16,14 @@ jobs:
     - name: Login to dockerhub
       run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-    - name: Get the version
-      id: vars
-      run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+    - name: Get current tag
+      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Build the tagged docker image
-      run: docker build . --file Dockerfile --tag thomis/elixir-rocky:${{steps.vars.outputs.tag}}
+      run: docker build . --file Dockerfile --tag thomis/elixir-rocky:${{ env.tag }}
 
     - name: Push the tagged docker image
-      run: docker push thomis/elixir-rocky:${{steps.vars.outputs.tag}}
+      run: docker push thomis/elixir-rocky:${{ env.tag }}
 
     - name: Build the latest docker image
       run: docker build . --file Dockerfile --tag thomis/elixir-rocky:latest
