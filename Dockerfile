@@ -4,7 +4,7 @@ LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
 # please update based availability
-ARG ASDF_VERSION=0.9.0
+ARG ASDF_VERSION=0.11.2
 ARG NODEJS_VERSION=latest
 
 RUN dnf -y upgrade
