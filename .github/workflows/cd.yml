@@ -1,4 +1,4 @@
-name: cd2
+name: cd
 
 on:
   release:
