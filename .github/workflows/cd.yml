@@ -1,4 +1,4 @@
-name: cd
+name: cd2
 
 on:
   release:
@@ -11,22 +11,36 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-    - name: Login to dockerhub
-      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    - name: Set up qemu
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up docker bildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Get current tag
       run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-    - name: Build the tagged docker image
-      run: docker build . --file Dockerfile --tag thomis/elixir-rocky:${{ env.tag }}
+    - name: Build and push with latest
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: thomis/elixir-rocky:latest
 
-    - name: Push the tagged docker image
-      run: docker push thomis/elixir-rocky:${{ env.tag }}
-
-    - name: Build the latest docker image
-      run: docker build . --file Dockerfile --tag thomis/elixir-rocky:latest
-
-    - name: Push the latest docker image
-      run: docker push thomis/elixir-rocky:latest
+    - name: Build and push with current tag
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: thomis/elixir-rocky:${{ env.tag }}
