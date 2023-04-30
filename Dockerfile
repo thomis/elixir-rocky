@@ -8,7 +8,7 @@ ARG ASDF_VERSION=0.11.2
 ARG NODEJS_VERSION=latest
 
 RUN dnf -y upgrade
-RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip g++
+RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip
 
 # UTF8 setting for elixir
 ENV LANG en_US.UTF-8
