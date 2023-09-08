@@ -4,8 +4,7 @@ LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
 
 # please update based availability
-ARG ASDF_VERSION=0.11.2
-ARG NODEJS_VERSION=latest
+ARG ASDF_VERSION=0.12.0
 
 RUN dnf -y upgrade
 RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip
@@ -29,24 +28,21 @@ RUN asdf update
 # erlang, elixir, nodejs, go
 RUN asdf plugin add erlang
 RUN asdf plugin add elixir
-RUN asdf plugin add nodejs
 RUN asdf plugin add golang
+RUN asdf plugin add bun
 
 RUN asdf install erlang latest
 RUN asdf install elixir latest
-RUN asdf install nodejs ${NODEJS_VERSION}
 RUN asdf install golang latest
+RUN asdf install bun latest
 
 RUN asdf global erlang latest
 RUN asdf global elixir latest
-RUN asdf global nodejs ${NODEJS_VERSION}
 RUN asdf global golang latest
+RUN asdf global bun latest
 
 RUN mix local.rebar --force
 RUN mix local.hex --force
 RUN mix archive.install hex phx_new --force
 
-RUN npm install -g npm@$latest
-
-RUN asdf list && echo "npm $(npm -v)" && mix phx.new --version
-
+RUN asdf list && mix phx.new --version
