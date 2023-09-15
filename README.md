@@ -10,5 +10,4 @@ Docker Hub Repository: https://hub.docker.com/repository/docker/thomis/elixir-ro
 - elixir https://github.com/elixir-lang/elixir
 - phoenix https://github.com/phoenixframework/phoenix
 - go https://github.com/golang/go
-- nodejs https://github.com/nodejs/node
-- npm https://github.com/npm/cli
+- bun [https://github.com/nodejs/node](https://github.com/oven-sh/bun)
