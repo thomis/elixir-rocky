@@ -1,4 +1,4 @@
-FROM rockylinux/rockylinux:9.3
+FROM rockylinux/rockylinux:9.3.20231119
 
 LABEL maintainer="thomas.steiner@ikey.ch"
 LABEL version="1.0.0"
