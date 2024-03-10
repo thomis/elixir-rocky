@@ -43,6 +43,7 @@ RUN asdf global bun latest
 
 RUN mix local.rebar --force
 RUN mix local.hex --force
+RUN mix archive.install github hexpm/hex branch latest
 RUN mix archive.install hex phx_new --force
 
 RUN asdf list && mix phx.new --version
