@@ -5,10 +5,10 @@ Builds and uploads Rocky Linux based docker image with erlang, elixir, phoenix, 
 
 Docker Hub Repository: https://hub.docker.com/repository/docker/thomis/elixir-rocky
 
-## How to test/build/developt the container?
+## How to test / build / develop the container?
 
 ```
-docker run --rm -it $(docker build .) bash
+docker run --rm -it $(docker build -q .) bash
 ```
 
 ## Source repositories
