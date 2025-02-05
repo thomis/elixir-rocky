@@ -15,23 +15,32 @@ ENV KERL_CONFIGURE_OPTIONS="--without-javac --without-wx --without-odbc"
 # and define login shell which sources .bashrc with every command
 SHELL ["/bin/bash", "--login", "-c"]
 
-# asdf
 RUN git config --global advice.detachedHead false
 
-ARG ARCH="linux-arm64"
-ARG REPO="asdf-vm/asdf"
-
+# asdf
 WORKDIR /root
-RUN VERSION=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | jq -r '.tag_name') && \
-    curl -LO "https://github.com/${REPO}/releases/download/$VERSION/asdf-$VERSION-${ARCH}.tar.gz" && \
-    curl -LO "https://github.com/${REPO}/releases/download/$VERSION/asdf-$VERSION-${ARCH}.tar.gz.md5" && \
-    echo "$(cat asdf-$VERSION-${ARCH}.tar.gz.md5) asdf-$VERSION-${ARCH}.tar.gz" > asdf-$VERSION-${ARCH}.tar.gz.md5 && \
-    md5sum -c "asdf-$VERSION-${ARCH}.tar.gz.md5" && \
-    rm "asdf-$VERSION-${ARCH}.tar.gz.md5" && \
-    tar -xzvf asdf-$VERSION-${ARCH}.tar.gz && \
+
+# Dynamically detect architecture and download the appropriate binary
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        ARCH=linux-amd64; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        ARCH=linux-arm64; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    REPO="asdf-vm/asdf" && \
+    VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | jq -r '.tag_name') && \
+    curl -LO "https://github.com/$REPO/releases/download/$VERSION/asdf-$VERSION-$ARCH.tar.gz" && \
+    curl -LO "https://github.com/$REPO/releases/download/$VERSION/asdf-$VERSION-$ARCH.tar.gz.md5" && \
+    echo "$(cat asdf-$VERSION-$ARCH.tar.gz.md5) asdf-$VERSION-$ARCH.tar.gz" > asdf-$VERSION-$ARCH.tar.gz.md5 && \
+    md5sum -c "asdf-$VERSION-$ARCH.tar.gz.md5" && \
+    rm "asdf-$VERSION-$ARCH.tar.gz.md5" && \
+    tar -xzvf "asdf-$VERSION-$ARCH.tar.gz" && \
     mv asdf /usr/local/bin && \
-    rm asdf-$VERSION-${ARCH}.tar.gz
-RUN echo -e '\nexport PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' >> ~/.bashrc
+    rm "asdf-$VERSION-$ARCH.tar.gz"
+
+RUN echo -e '\nexport PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' >> ~/.profile
 
 # erlang, elixir, nodejs, go
 RUN asdf plugin add erlang
