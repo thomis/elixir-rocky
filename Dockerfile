@@ -40,7 +40,7 @@ RUN ARCH=$(uname -m) && \
     mv asdf /usr/local/bin && \
     rm "asdf-$VERSION-$ARCH.tar.gz"
 
-RUN echo -e '\nexport PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' >> ~/.profile
+RUN echo -e '\nexport PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' >> ~/.bashrc
 
 # erlang, elixir, nodejs, go
 RUN asdf plugin add erlang
