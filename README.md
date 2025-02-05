@@ -5,7 +5,13 @@ Builds and uploads Rocky Linux based docker image with erlang, elixir, phoenix, 
 
 Docker Hub Repository: https://hub.docker.com/repository/docker/thomis/elixir-rocky
 
-### Source repositories
+## How to test/build/developt the container?
+
+```
+docker run --rm -it $(docker build .) bash
+```
+
+## Source repositories
 - erlang/otp https://github.com/erlang/otp
 - elixir https://github.com/elixir-lang/elixir
 - phoenix https://github.com/phoenixframework/phoenix
