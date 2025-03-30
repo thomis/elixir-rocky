@@ -54,7 +54,7 @@ RUN asdf install golang latest
 RUN asdf install bun latest
 
 RUN asdf set --home erlang latest
-RUN asdf set --home elixir latest
+RUN asdf set --home elixir elixir 1.18.3-otp-27
 RUN asdf set --home golang latest
 RUN asdf set --home bun latest
 
