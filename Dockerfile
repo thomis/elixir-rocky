@@ -49,7 +49,7 @@ RUN asdf plugin add golang
 RUN asdf plugin add bun
 
 RUN asdf install erlang latest
-RUN asdf install elixir latest
+RUN asdf install elixir elixir 1.18.3-otp-27
 RUN asdf install golang latest
 RUN asdf install bun latest
 
