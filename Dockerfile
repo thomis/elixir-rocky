@@ -10,7 +10,7 @@ RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf open
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV KERL_CONFIGURE_OPTIONS="--without-javac --without-wx --without-odbc"
-ENV ELIXIR=1.18.3-otp-27
+ENV ELIXIR=1.18.4-otp-27
 
 # use bash as default shell
 # and define login shell which sources .bashrc with every command
