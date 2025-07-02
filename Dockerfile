@@ -59,9 +59,10 @@ RUN asdf set --home elixir $ELIXIR
 RUN asdf set --home golang latest
 RUN asdf set --home bun latest
 
-RUN mix local.rebar --force
-RUN mix local.hex --force
-RUN mix archive.install github hexpm/hex branch latest
-RUN mix archive.install hex phx_new --force
+# Source bashrc to ensure asdf shims are in PATH
+RUN source ~/.bashrc && mix local.rebar --force
+RUN source ~/.bashrc && mix local.hex --force
+RUN source ~/.bashrc && mix archive.install github hexpm/hex branch latest
+RUN source ~/.bashrc && mix archive.install hex phx_new --force
 
-RUN asdf list && mix phx.new --version
+RUN source ~/.bashrc && asdf list && mix phx.new --version
