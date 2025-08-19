@@ -28,11 +28,8 @@ jobs:
           asdf plugin add bun
           
           # Get latest stable versions available
-          echo "Checking latest available versions..."
-          
           # Get latest Erlang version (filter out RC versions)
           LATEST_ERLANG=$(asdf list all erlang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
-          echo "  Erlang: $LATEST_ERLANG"
           
           # For Elixir, we need to match with OTP version
           # Get the major version of Erlang for Elixir compatibility
@@ -42,19 +39,15 @@ jobs:
           if [ -z "$LATEST_ELIXIR" ]; then
             LATEST_ELIXIR=$(asdf list all elixir | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
           fi
-          echo "  Elixir: $LATEST_ELIXIR"
           
           # Get latest Go version
           LATEST_GO=$(asdf list all golang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
-          echo "  Go: $LATEST_GO"
           
           # Get latest Bun version
           LATEST_BUN=$(asdf list all bun | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
-          echo "  Bun: $LATEST_BUN"
           
           # Phoenix version needs to be checked differently (via hex.pm API)
           LATEST_PHOENIX=$(curl -s https://hex.pm/api/packages/phoenix | jq -r '.releases[0].version')
-          echo "  Phoenix: $LATEST_PHOENIX"
           
           # Create JSON with latest versions
           cat > latest-versions.json << EOF
@@ -67,7 +60,6 @@ jobs:
           }
           EOF
           
-          echo ""
           echo "Latest available versions:"
           cat latest-versions.json | jq .
           

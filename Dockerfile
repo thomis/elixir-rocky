@@ -82,11 +82,11 @@ RUN source ~/.bashrc && asdf list && mix phx.new --version
 
 # Create version files for reference and output for build process
 RUN source ~/.bashrc && \
-    ERLANG_VERSION=$(asdf list erlang | grep -v "No versions" | tail -1 | xargs) && \
-    ELIXIR_VERSION=$(asdf list elixir | grep -v "No versions" | tail -1 | xargs) && \
+    ERLANG_VERSION=$(asdf list erlang | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//' ) && \
+    ELIXIR_VERSION=$(asdf list elixir | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
     PHOENIX_VERSION=$(mix phx.new --version | grep "Phoenix installer v" | cut -d'v' -f2) && \
-    GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs) && \
-    BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs) && \
+    GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
+    BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
     ROCKY_VERSION=$(cat /etc/rocky-release | grep -oP '\d+' | head -1) && \
     jq -n \
       --arg erlang "${ERLANG_VERSION}" \
