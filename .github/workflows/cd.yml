@@ -49,19 +49,19 @@ jobs:
             CACHE_FLAG=""
             echo "Building with cache..."
           fi
-          
+
           # Build the image and capture output
           docker build . --file Dockerfile $CACHE_FLAG --tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} 2>&1 | tee build.log
-          
+
           # Extract JSON versions from build output
           VERSION_JSON=$(grep "::VERSIONS::" build.log | tail -1 | sed 's/.*::VERSIONS::\(.*\)::VERSIONS::.*/\1/')
-          
+
           # If we didn't get versions from build output (cached), extract from the built image
           if [ -z "$VERSION_JSON" ] || [ "$VERSION_JSON" = "" ]; then
             echo "Build was cached, extracting versions from built image..."
             VERSION_JSON=$(docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json)
           fi
-          
+
           if [ -n "$VERSION_JSON" ]; then
             # Validate JSON before parsing
             if echo "$VERSION_JSON" | jq empty 2>/dev/null; then
@@ -72,7 +72,7 @@ jobs:
               GO=$(echo "$VERSION_JSON" | jq -r '.go')
               BUN=$(echo "$VERSION_JSON" | jq -r '.bun')
               ROCKY=$(echo "$VERSION_JSON" | jq -r '.rocky_linux')
-              
+
               # Set outputs for later steps
               echo "erlang_version=$ERLANG" >> $GITHUB_OUTPUT
               echo "elixir_version=$ELIXIR" >> $GITHUB_OUTPUT
@@ -80,7 +80,7 @@ jobs:
               echo "go_version=$GO" >> $GITHUB_OUTPUT
               echo "bun_version=$BUN" >> $GITHUB_OUTPUT
               echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
-              
+
               echo "Captured versions from build:"
               echo "  Erlang/OTP: $ERLANG"
               echo "  Elixir: $ELIXIR"
@@ -88,7 +88,7 @@ jobs:
               echo "  Go: $GO"
               echo "  Bun: $BUN"
               echo "  Rocky Linux: $ROCKY"
-              
+
               # Save JSON for release asset
               echo "$VERSION_JSON" | jq . > versions.json
             else
@@ -99,7 +99,7 @@ jobs:
           else
             echo "Warning: Could not extract version information from build or image"
           fi
-          
+
           # Tag as latest as well
           docker tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} ghcr.io/thomis/elixir-rocky:latest
 
@@ -119,89 +119,89 @@ jobs:
             GO=$(jq -r '.go // "unknown"' versions.json)
             BUN=$(jq -r '.bun // "unknown"' versions.json)
             ROCKY=$(jq -r '.rocky_linux // "unknown"' versions.json)
-            
+
             cat > release_notes.md << EOF
           ## Component Versions
-          
+
           This release includes the following components:
-          
+
           ### Runtime & Languages
           - Erlang/OTP: ${ERLANG}
           - Elixir: ${ELIXIR}
           - Go: ${GO}
-          
+
           ### Frameworks & Tools
           - Phoenix Framework: ${PHOENIX}
           - Bun: ${BUN}
-          
+
           ### Base System
           - Rocky Linux: ${ROCKY}
-          
+
           ## Quick Start
-          
+
           \`\`\`bash
           # Pull the image
           docker pull ghcr.io/thomis/elixir-rocky:${{ env.tag }}
-          
+
           # Run interactive shell
           docker run --rm -it ghcr.io/thomis/elixir-rocky:${{ env.tag }} bash
-          
+
           # Check installed versions
           docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.txt
-          
+
           # Get versions as JSON
           docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json
           \`\`\`
-          
+
           ## What's Changed
           Component versions have been updated to their latest stable releases.
-          
+
           **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
           EOF
-            
+
             echo "Release notes generated successfully from versions.json"
             cat release_notes.md
           elif [ -n "${{ steps.build.outputs.erlang_version }}" ]; then
             # Fallback to using outputs if versions.json doesn't exist
             cat > release_notes.md << EOF
           ## Component Versions
-          
+
           This release includes the following components:
-          
+
           ### Runtime & Languages
           - Erlang/OTP: ${{ steps.build.outputs.erlang_version }}
           - Elixir: ${{ steps.build.outputs.elixir_version }}
           - Go: ${{ steps.build.outputs.go_version }}
-          
+
           ### Frameworks & Tools
           - Phoenix Framework: ${{ steps.build.outputs.phoenix_version }}
           - Bun: ${{ steps.build.outputs.bun_version }}
-          
+
           ### Base System
           - Rocky Linux: ${{ steps.build.outputs.rocky_version }}
-          
+
           ## Quick Start
-          
+
           \`\`\`bash
           # Pull the image
           docker pull ghcr.io/thomis/elixir-rocky:${{ env.tag }}
-          
+
           # Run interactive shell
           docker run --rm -it ghcr.io/thomis/elixir-rocky:${{ env.tag }} bash
-          
+
           # Check installed versions
           docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.txt
-          
+
           # Get versions as JSON
           docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json
           \`\`\`
-          
+
           ## What's Changed
           Component versions have been updated to their latest stable releases.
-          
+
           **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
           EOF
-            
+
             echo "Release notes generated successfully from outputs"
             cat release_notes.md
           else
@@ -211,6 +211,9 @@ jobs:
       - name: Create and push tag
         if: github.event_name == 'workflow_dispatch'
         run: |
+          # Always delete local tag first
+          git tag -d ${{ env.tag }} 2>/dev/null || true
+
           git config user.name github-actions
           git config user.email github-actions@github.com
           git tag ${{ env.tag }}
@@ -223,7 +226,7 @@ jobs:
           if [ ! -f release_notes.md ]; then
             echo "Docker image published with latest component versions." > release_notes.md
           fi
-          
+
           # Ensure we have versions.json
           if [ ! -f versions.json ]; then
             echo '{}' > versions.json
@@ -241,7 +244,7 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Update existing release with versions
         if: github.event_name == 'release' && hashFiles('versions.json') != ''
         uses: softprops/action-gh-release@v2
