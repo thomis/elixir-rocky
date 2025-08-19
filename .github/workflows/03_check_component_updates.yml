@@ -126,8 +126,15 @@ jobs:
           cat current.json
           echo ""
           
-          # Compare the JSON files
-          if diff -q latest.json current.json > /dev/null 2>&1; then
+          # Compare the JSON files (excluding rocky_linux which might only be in current.json)
+          # Extract only the component versions we care about for comparison
+          LATEST_COMPONENTS=$(cat latest.json | jq '{erlang, elixir, phoenix, go, bun}')
+          CURRENT_COMPONENTS=$(cat current.json | jq '{erlang, elixir, phoenix, go, bun}')
+          
+          echo "$LATEST_COMPONENTS" > latest_components.json
+          echo "$CURRENT_COMPONENTS" > current_components.json
+          
+          if diff -q latest_components.json current_components.json > /dev/null 2>&1; then
             echo "No version changes detected. Current release is up to date."
             echo "needs_release=false" >> $GITHUB_OUTPUT
           else
@@ -156,10 +163,10 @@ jobs:
             echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
             echo "Next release tag: $NEW_TAG"
             
-            # Show differences
+            # Show differences (only for components we track)
             echo ""
             echo "Changes detected:"
-            diff -u current.json latest.json || true
+            diff -u current_components.json latest_components.json || true
           fi
       
       - name: Trigger CD workflow
