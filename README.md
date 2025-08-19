@@ -8,7 +8,7 @@
 
 A production-ready Docker image combining Elixir, Phoenix Framework, Go, and Bun on Rocky Linux. Perfect for building scalable web applications, APIs, and microservices with a polyglot development stack.
 
-## 📦 Container Registry
+## Container Registry
 
 The Docker image is available on GitHub Container Registry (GHCR):
 
@@ -18,7 +18,7 @@ docker pull ghcr.io/thomis/elixir-rocky:latest
 
 View all available tags: [ghcr.io/thomis/elixir-rocky](https://github.com/thomis/elixir-rocky/pkgs/container/elixir-rocky)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Using the Pre-built Image
 
@@ -43,7 +43,7 @@ docker run --rm -it $(docker build -q .) bash
 docker build -t my-elixir-rocky:dev .
 ```
 
-## 🛠️ Included Software
+## Included Software
 
 This image includes the following development tools:
 
@@ -55,7 +55,7 @@ This image includes the following development tools:
 | **Go** | Fast, statically typed compiled language | [golang/go](https://github.com/golang/go) |
 | **Bun** | All-in-one JavaScript runtime & toolkit | [oven-sh/bun](https://github.com/oven-sh/bun) |
 
-## 📋 Use Cases
+## Use Cases
 
 This image is ideal for:
 
@@ -65,7 +65,7 @@ This image is ideal for:
 - **Full-Stack Development** - Combined backend (Elixir/Phoenix) and frontend (Bun) development
 - **CI/CD Pipelines** - Consistent build environment for automated testing and deployment
 
-## 🔧 Configuration
+## Configuration
 
 The image is based on Rocky Linux for enterprise-grade stability and includes:
 
@@ -74,14 +74,14 @@ The image is based on Rocky Linux for enterprise-grade stability and includes:
 - Common system libraries
 - UTF-8 locale configuration
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📞 Support
+## Support
 
 For issues, questions, or suggestions, please [open an issue](https://github.com/thomis/elixir-rocky/issues) on GitHub.

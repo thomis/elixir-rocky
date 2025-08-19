@@ -85,7 +85,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && steps.build.outputs.erlang_version != ''
         run: |
           cat > release_notes.md << EOF
-          ## 📦 Component Versions
+          ## Component Versions
           
           This release includes the following components:
           
@@ -101,7 +101,7 @@ jobs:
           ### Base System
           - **Rocky Linux:** ${{ steps.build.outputs.rocky_version }}
           
-          ## 🚀 Quick Start
+          ## Quick Start
           
           \`\`\`bash
           # Pull the image
@@ -117,7 +117,7 @@ jobs:
           docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json
           \`\`\`
           
-          ## 📋 What's Changed
+          ## What's Changed
           Component versions have been updated to their latest stable releases.
           
           **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
@@ -126,25 +126,23 @@ jobs:
           echo "Release notes generated successfully:"
           cat release_notes.md
 
-      - name: Create GitHub Release
+      - name: Create and push tag
         if: github.event_name == 'workflow_dispatch'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create the tag first
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git tag ${{ env.tag }}
           git push origin ${{ env.tag }}
-          
-          # Create release using GitHub CLI
-          if [ -f release_notes.md ]; then
-            gh release create ${{ env.tag }} \
-              --title "Release ${{ env.tag }}" \
-              --notes-file release_notes.md \
-              --verify-tag
-          else
-            # Fallback if versions weren't captured
-            gh release create ${{ env.tag }} \
-              --title "Release ${{ env.tag }}" \
-              --notes "Docker image published with latest component versions. Check the image for detailed version information." \
-              --verify-tag
-          fi
+
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.tag }}
+          name: Release ${{ env.tag }}
+          body_path: release_notes.md
+          files: versions.json
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,234 @@
+name: version-check
+
+on:
+  schedule:
+    # Run at 2 AM UTC on Wednesday and Saturday
+    - cron: '0 2 * * 3,6'
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      
+      - name: Check latest available versions
+        id: check
+        run: |
+          # Install asdf
+          git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0
+          . ~/.asdf/asdf.sh
+          
+          # Add plugins
+          asdf plugin add erlang
+          asdf plugin add elixir
+          asdf plugin add golang
+          asdf plugin add bun
+          
+          # Get latest stable versions available
+          echo "Checking latest available versions..."
+          
+          # Get latest Erlang version (filter out RC versions)
+          LATEST_ERLANG=$(asdf list all erlang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
+          echo "  Erlang: $LATEST_ERLANG"
+          
+          # For Elixir, we need to match with OTP version
+          # Get the major version of Erlang for Elixir compatibility
+          ERLANG_MAJOR=$(echo $LATEST_ERLANG | cut -d. -f1)
+          LATEST_ELIXIR=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+-otp-${ERLANG_MAJOR}$" | tail -1 | xargs)
+          # Fallback if no exact OTP match
+          if [ -z "$LATEST_ELIXIR" ]; then
+            LATEST_ELIXIR=$(asdf list all elixir | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
+          fi
+          echo "  Elixir: $LATEST_ELIXIR"
+          
+          # Get latest Go version
+          LATEST_GO=$(asdf list all golang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
+          echo "  Go: $LATEST_GO"
+          
+          # Get latest Bun version
+          LATEST_BUN=$(asdf list all bun | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
+          echo "  Bun: $LATEST_BUN"
+          
+          # Phoenix version needs to be checked differently (via hex.pm API)
+          LATEST_PHOENIX=$(curl -s https://hex.pm/api/packages/phoenix | jq -r '.releases[0].version')
+          echo "  Phoenix: $LATEST_PHOENIX"
+          
+          # Create JSON with latest versions
+          cat > latest-versions.json << EOF
+          {
+            "erlang": "$LATEST_ERLANG",
+            "elixir": "$LATEST_ELIXIR",
+            "phoenix": "$LATEST_PHOENIX",
+            "go": "$LATEST_GO",
+            "bun": "$LATEST_BUN"
+          }
+          EOF
+          
+          echo ""
+          echo "Latest available versions:"
+          cat latest-versions.json | jq .
+          
+          # Output for next steps
+          echo "versions_json=$(cat latest-versions.json | jq -c .)" >> $GITHUB_OUTPUT
+      
+      - name: Get latest release info
+        id: latest_release
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+      
+      - name: Download current release versions
+        id: current
+        run: |
+          echo "Downloading versions.json from latest release..."
+          
+          # Check if we got a release
+          if [ "${{ steps.latest_release.outcome }}" != "success" ]; then
+            echo "No releases found. Will trigger initial release."
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            echo "current_versions={}" >> $GITHUB_OUTPUT
+            echo "latest_tag=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          LATEST_TAG="${{ steps.latest_release.outputs.release }}"
+          echo "Current release tag: $LATEST_TAG"
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          
+          # Try to download versions.json from the release
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${LATEST_TAG}/versions.json"
+          
+          if curl -L -f -o current-versions.json "$DOWNLOAD_URL" 2>/dev/null; then
+            echo "Current release versions:"
+            cat current-versions.json | jq .
+            echo "current_versions=$(cat current-versions.json | jq -c .)" >> $GITHUB_OUTPUT
+          else
+            echo "Warning: No versions.json found in release $LATEST_TAG"
+            echo "Will treat as outdated and trigger new release."
+            echo "current_versions={}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Compare versions
+        id: compare
+        run: |
+          echo "Comparing versions..."
+          echo ""
+          
+          # Get the JSON strings
+          LATEST_JSON='${{ steps.check.outputs.versions_json }}'
+          CURRENT_JSON='${{ steps.current.outputs.current_versions }}'
+          
+          # Save to files for comparison
+          echo "$LATEST_JSON" | jq . > latest.json
+          echo "$CURRENT_JSON" | jq . > current.json 2>/dev/null || echo '{}' > current.json
+          
+          echo "Latest available:"
+          cat latest.json
+          echo ""
+          echo "Current release:"
+          cat current.json
+          echo ""
+          
+          # Compare the JSON files
+          if diff -q latest.json current.json > /dev/null 2>&1; then
+            echo "No version changes detected. Current release is up to date."
+            echo "needs_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version changes detected! New release needed."
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            
+            # Generate next version tag
+            LATEST_TAG="${{ steps.current.outputs.latest_tag }}"
+            if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "null" ]; then
+              # Parse semantic version and increment
+              if [[ $LATEST_TAG =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                MAJOR="${BASH_REMATCH[1]}"
+                MINOR="${BASH_REMATCH[2]}"
+                PATCH="${BASH_REMATCH[3]}"
+                NEW_PATCH=$((PATCH + 1))
+                NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+              else
+                # Fallback if tag format is different
+                NEW_TAG="v$(date +%Y.%m.%d)"
+              fi
+            else
+              # First release
+              NEW_TAG="v1.0.0"
+            fi
+            
+            echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "Next release tag: $NEW_TAG"
+            
+            # Show differences
+            echo ""
+            echo "Changes detected:"
+            diff -u current.json latest.json || true
+          fi
+      
+      - name: Trigger CD workflow
+        if: steps.compare.outputs.needs_release == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            console.log('Triggering CD workflow for tag: ${{ steps.compare.outputs.new_tag }}');
+            
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'cd.yml',
+              ref: 'main',
+              inputs: {
+                tag_name: '${{ steps.compare.outputs.new_tag }}'
+              }
+            });
+            
+            console.log('CD workflow triggered successfully!');
+            console.log('New release ${{ steps.compare.outputs.new_tag }} will be created with updated component versions.');
+      
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## Version Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.compare.outputs.needs_release }}" == "true" ]; then
+            echo "### New Release Triggered" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **New Tag**: ${{ steps.compare.outputs.new_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status**: CD workflow triggered" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### No Updates Needed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All components are up to date with the latest release." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Latest Available Versions" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat latest-versions.json | jq . >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create issue if check failed
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Version check workflow failed',
+                body: `The automated version check workflow failed. Please check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`,
+                labels: ['automated', 'build-failure']
+              });
+              console.log('Issue created successfully');
+            } catch (error) {
+              console.log('Failed to create issue:', error.message);
+            }
