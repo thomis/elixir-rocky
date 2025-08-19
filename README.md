@@ -6,7 +6,7 @@
 
 # Elixir Development Stack on Rocky Linux
 
-A production-ready Docker image combining Elixir, Phoenix Framework, Go, and Bun on Rocky Linux. Perfect for building scalable web applications, APIs, and microservices with a polyglot development stack.
+A production-ready Docker image combining Elixir, Phoenix Framework, Go, and Bun on Rocky Linux. Build scalable web applications, APIs, and microservices with a modern, rock-solid development stack.
 
 ## Container Registry
 
