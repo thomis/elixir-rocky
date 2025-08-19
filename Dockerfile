@@ -62,12 +62,22 @@ RUN asdf plugin add golang
 RUN asdf plugin add bun
 
 RUN asdf install erlang latest
-RUN asdf install elixir latest
+# Get the installed Erlang OTP version and install matching Elixir
+RUN source ~/.bashrc && \
+    ERLANG_VERSION=$(asdf list erlang | tail -1 | xargs) && \
+    ERLANG_MAJOR=$(echo $ERLANG_VERSION | cut -d. -f1) && \
+    echo "Erlang installed: ${ERLANG_VERSION} (OTP ${ERLANG_MAJOR})" && \
+    ELIXIR_VERSION=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+-otp-${ERLANG_MAJOR}$" | tail -1) && \
+    echo "Installing Elixir ${ELIXIR_VERSION} for OTP ${ERLANG_MAJOR}" && \
+    asdf install elixir ${ELIXIR_VERSION}
 RUN asdf install golang latest
 RUN asdf install bun latest
 
 RUN asdf set --home erlang latest
-RUN asdf set --home elixir latest
+# Set the installed Elixir version as default
+RUN source ~/.bashrc && \
+    ELIXIR_VERSION=$(asdf list elixir | tail -1 | xargs) && \
+    asdf set --home elixir ${ELIXIR_VERSION}
 RUN asdf set --home golang latest
 RUN asdf set --home bun latest
 
