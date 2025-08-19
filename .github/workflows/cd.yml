@@ -1,6 +1,12 @@
 name: cd
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release (e.g., v1.0.0)'
+        required: true
+        type: string
   release:
     types: [published]
 
@@ -12,8 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Get current tag
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Determine tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+          else
+            echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          fi
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -22,12 +33,118 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ghcr.io/thomis/elixir-rocky:${{ env.tag }}
-            ghcr.io/thomis/elixir-rocky:latest
+      - name: Build Docker image and capture versions
+        id: build
+        run: |
+          # Build the image and capture output
+          docker build . --file Dockerfile --tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} 2>&1 | tee build.log
+          
+          # Extract JSON versions from build output
+          VERSION_JSON=$(grep "::VERSIONS::" build.log | tail -1 | sed 's/.*::VERSIONS::\(.*\)::VERSIONS::.*/\1/')
+          
+          if [ -n "$VERSION_JSON" ]; then
+            # Parse JSON to extract versions
+            ERLANG=$(echo "$VERSION_JSON" | jq -r '.erlang')
+            ELIXIR=$(echo "$VERSION_JSON" | jq -r '.elixir')
+            PHOENIX=$(echo "$VERSION_JSON" | jq -r '.phoenix')
+            GO=$(echo "$VERSION_JSON" | jq -r '.go')
+            BUN=$(echo "$VERSION_JSON" | jq -r '.bun')
+            ROCKY=$(echo "$VERSION_JSON" | jq -r '.rocky_linux')
+            
+            # Set outputs for later steps
+            echo "erlang_version=$ERLANG" >> $GITHUB_OUTPUT
+            echo "elixir_version=$ELIXIR" >> $GITHUB_OUTPUT
+            echo "phoenix_version=$PHOENIX" >> $GITHUB_OUTPUT
+            echo "go_version=$GO" >> $GITHUB_OUTPUT
+            echo "bun_version=$BUN" >> $GITHUB_OUTPUT
+            echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
+            
+            echo "Captured versions from build:"
+            echo "  Erlang/OTP: $ERLANG"
+            echo "  Elixir: $ELIXIR"
+            echo "  Phoenix: $PHOENIX"
+            echo "  Go: $GO"
+            echo "  Bun: $BUN"
+            echo "  Rocky Linux: $ROCKY"
+            
+            # Save JSON for potential debugging
+            echo "$VERSION_JSON" > versions.json
+          else
+            echo "Warning: Could not extract version information from build"
+          fi
+          
+          # Tag as latest as well
+          docker tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} ghcr.io/thomis/elixir-rocky:latest
+
+      - name: Push Docker images
+        run: |
+          docker push ghcr.io/thomis/elixir-rocky:${{ env.tag }}
+          docker push ghcr.io/thomis/elixir-rocky:latest
+
+      - name: Generate release notes
+        if: github.event_name == 'workflow_dispatch' && steps.build.outputs.erlang_version != ''
+        run: |
+          cat > release_notes.md << EOF
+          ## 📦 Component Versions
+          
+          This release includes the following components:
+          
+          ### Runtime & Languages
+          - **Erlang/OTP:** ${{ steps.build.outputs.erlang_version }}
+          - **Elixir:** ${{ steps.build.outputs.elixir_version }}
+          - **Go:** ${{ steps.build.outputs.go_version }}
+          
+          ### Frameworks & Tools
+          - **Phoenix Framework:** ${{ steps.build.outputs.phoenix_version }}
+          - **Bun:** ${{ steps.build.outputs.bun_version }}
+          
+          ### Base System
+          - **Rocky Linux:** ${{ steps.build.outputs.rocky_version }}
+          
+          ## 🚀 Quick Start
+          
+          \`\`\`bash
+          # Pull the image
+          docker pull ghcr.io/thomis/elixir-rocky:${{ env.tag }}
+          
+          # Run interactive shell
+          docker run --rm -it ghcr.io/thomis/elixir-rocky:${{ env.tag }} bash
+          
+          # Check installed versions
+          docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.txt
+          
+          # Get versions as JSON
+          docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json
+          \`\`\`
+          
+          ## 📋 What's Changed
+          Component versions have been updated to their latest stable releases.
+          
+          **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
+          EOF
+          
+          echo "Release notes generated successfully:"
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create the tag first
+          git tag ${{ env.tag }}
+          git push origin ${{ env.tag }}
+          
+          # Create release using GitHub CLI
+          if [ -f release_notes.md ]; then
+            gh release create ${{ env.tag }} \
+              --title "Release ${{ env.tag }}" \
+              --notes-file release_notes.md \
+              --verify-tag
+          else
+            # Fallback if versions weren't captured
+            gh release create ${{ env.tag }} \
+              --title "Release ${{ env.tag }}" \
+              --notes "Docker image published with latest component versions. Check the image for detailed version information." \
+              --verify-tag
+          fi

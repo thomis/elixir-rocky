@@ -1,7 +1,16 @@
 FROM rockylinux/rockylinux:10
 
+# OCI Image Metadata - https://github.com/opencontainers/image-spec/blob/main/annotations.md
 LABEL maintainer="thomas.steiner@ikey.ch"
-LABEL version="1.0.0"
+LABEL org.opencontainers.image.authors="thomas.steiner@ikey.ch"
+LABEL org.opencontainers.image.url="https://github.com/thomis/elixir-rocky"
+LABEL org.opencontainers.image.source="https://github.com/thomis/elixir-rocky"
+LABEL org.opencontainers.image.documentation="https://github.com/thomis/elixir-rocky/blob/main/README.md"
+LABEL org.opencontainers.image.vendor="thomis"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.title="Elixir Development Stack on Rocky Linux"
+LABEL org.opencontainers.image.base.name="rockylinux/rockylinux:10"
+LABEL org.opencontainers.image.description="Production-ready development stack with latest Erlang, Elixir, Phoenix Framework, Go, and Bun on Rocky Linux 10. Check /versions.json or /versions.txt for installed versions."
 
 RUN dnf -y upgrade
 RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip jq
@@ -66,3 +75,54 @@ RUN source ~/.bashrc && mix archive.install github hexpm/hex branch latest
 RUN source ~/.bashrc && mix archive.install hex phx_new --force
 
 RUN source ~/.bashrc && asdf list && mix phx.new --version
+
+# Create version files for reference and output for build process
+RUN source ~/.bashrc && \
+    ERLANG_VERSION=$(asdf list erlang | grep -v "No versions" | tail -1 | xargs) && \
+    ELIXIR_VERSION=$(asdf list elixir | grep -v "No versions" | tail -1 | xargs) && \
+    PHOENIX_VERSION=$(mix phx.new --version | grep "Phoenix installer v" | cut -d'v' -f2) && \
+    GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs) && \
+    BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs) && \
+    ROCKY_VERSION=$(cat /etc/rocky-release | grep -oP '\d+' | head -1) && \
+    \
+    # Create JSON file for machine parsing \
+    cat > /versions.json << EOF && \
+{
+  "erlang": "${ERLANG_VERSION}",
+  "elixir": "${ELIXIR_VERSION}",
+  "phoenix": "${PHOENIX_VERSION}",
+  "go": "${GO_VERSION}",
+  "bun": "${BUN_VERSION}",
+  "rocky_linux": "${ROCKY_VERSION}"
+}
+EOF
+    \
+    # Create human-readable text file \
+    cat > /versions.txt << EOF && \
+========================================
+   Elixir Development Stack Versions
+========================================
+
+Runtime & Languages:
+  • Erlang/OTP:        ${ERLANG_VERSION}
+  • Elixir:            ${ELIXIR_VERSION}
+  • Go:                ${GO_VERSION}
+
+Frameworks & Tools:
+  • Phoenix Framework: ${PHOENIX_VERSION}
+  • Bun:               ${BUN_VERSION}
+
+Base System:
+  • Rocky Linux:       ${ROCKY_VERSION}
+
+========================================
+EOF
+    \
+    echo "=== Version files created ===" && \
+    echo "JSON format:" && \
+    cat /versions.json && \
+    echo -e "\nText format:" && \
+    cat /versions.txt && \
+    \
+    # Output for CI/CD capture \
+    echo "::VERSIONS::$(cat /versions.json | jq -c .)::VERSIONS::"
