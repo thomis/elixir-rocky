@@ -84,45 +84,27 @@ RUN source ~/.bashrc && \
     GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs) && \
     BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs) && \
     ROCKY_VERSION=$(cat /etc/rocky-release | grep -oP '\d+' | head -1) && \
-    \
-    # Create JSON file for machine parsing \
-    cat > /versions.json << EOF && \
-{
-  "erlang": "${ERLANG_VERSION}",
-  "elixir": "${ELIXIR_VERSION}",
-  "phoenix": "${PHOENIX_VERSION}",
-  "go": "${GO_VERSION}",
-  "bun": "${BUN_VERSION}",
-  "rocky_linux": "${ROCKY_VERSION}"
-}
-EOF
-    \
-    # Create human-readable text file \
-    cat > /versions.txt << EOF && \
-========================================
-   Elixir Development Stack Versions
-========================================
-
-Runtime & Languages:
-  • Erlang/OTP:        ${ERLANG_VERSION}
-  • Elixir:            ${ELIXIR_VERSION}
-  • Go:                ${GO_VERSION}
-
-Frameworks & Tools:
-  • Phoenix Framework: ${PHOENIX_VERSION}
-  • Bun:               ${BUN_VERSION}
-
-Base System:
-  • Rocky Linux:       ${ROCKY_VERSION}
-
-========================================
-EOF
-    \
+    echo "{\"erlang\": \"${ERLANG_VERSION}\", \"elixir\": \"${ELIXIR_VERSION}\", \"phoenix\": \"${PHOENIX_VERSION}\", \"go\": \"${GO_VERSION}\", \"bun\": \"${BUN_VERSION}\", \"rocky_linux\": \"${ROCKY_VERSION}\"}" | jq . > /versions.json && \
+    echo "========================================" > /versions.txt && \
+    echo "   Elixir Development Stack Versions" >> /versions.txt && \
+    echo "========================================" >> /versions.txt && \
+    echo "" >> /versions.txt && \
+    echo "Runtime & Languages:" >> /versions.txt && \
+    echo "  • Erlang/OTP:        ${ERLANG_VERSION}" >> /versions.txt && \
+    echo "  • Elixir:            ${ELIXIR_VERSION}" >> /versions.txt && \
+    echo "  • Go:                ${GO_VERSION}" >> /versions.txt && \
+    echo "" >> /versions.txt && \
+    echo "Frameworks & Tools:" >> /versions.txt && \
+    echo "  • Phoenix Framework: ${PHOENIX_VERSION}" >> /versions.txt && \
+    echo "  • Bun:               ${BUN_VERSION}" >> /versions.txt && \
+    echo "" >> /versions.txt && \
+    echo "Base System:" >> /versions.txt && \
+    echo "  • Rocky Linux:       ${ROCKY_VERSION}" >> /versions.txt && \
+    echo "" >> /versions.txt && \
+    echo "========================================" >> /versions.txt && \
     echo "=== Version files created ===" && \
     echo "JSON format:" && \
     cat /versions.json && \
     echo -e "\nText format:" && \
     cat /versions.txt && \
-    \
-    # Output for CI/CD capture \
     echo "::VERSIONS::$(cat /versions.json | jq -c .)::VERSIONS::"
