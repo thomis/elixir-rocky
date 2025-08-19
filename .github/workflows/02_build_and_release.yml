@@ -126,17 +126,14 @@ jobs:
 
           This release includes the following components:
 
-          ### Runtime & Languages
-          - Erlang/OTP: ${ERLANG}
-          - Elixir: ${ELIXIR}
-          - Go: ${GO}
-
-          ### Frameworks & Tools
-          - Phoenix Framework: ${PHOENIX}
-          - Bun: ${BUN}
-
-          ### Base System
-          - Rocky Linux: ${ROCKY}
+          | Type                | Component    | Version     |
+          |---------------------|--------------|-------------|
+          | Runtime & Languages | Erlang/OTP   | ${ERLANG}   |
+          | Runtime & Languages | Elixir       | ${ELIXIR}   |
+          | Runtime & Languages | Go           | ${GO}       |
+          | Frameworks & Tools  | Phoenix      | ${PHOENIX}  |
+          | Frameworks & Tools  | Bun          | ${BUN}      |
+          | Base System         | Rocky Linux  | ${ROCKY}    |
 
           ## Quick Start
 
@@ -169,17 +166,14 @@ jobs:
 
           This release includes the following components:
 
-          ### Runtime & Languages
-          - Erlang/OTP: ${{ steps.build.outputs.erlang_version }}
-          - Elixir: ${{ steps.build.outputs.elixir_version }}
-          - Go: ${{ steps.build.outputs.go_version }}
-
-          ### Frameworks & Tools
-          - Phoenix Framework: ${{ steps.build.outputs.phoenix_version }}
-          - Bun: ${{ steps.build.outputs.bun_version }}
-
-          ### Base System
-          - Rocky Linux: ${{ steps.build.outputs.rocky_version }}
+          | Type                | Component    | Version     |
+          |---------------------|--------------|-------------|
+          | Runtime & Languages | Erlang/OTP   | ${{ steps.build.outputs.erlang_version }} |
+          | Runtime & Languages | Elixir       | ${{ steps.build.outputs.elixir_version }} |
+          | Runtime & Languages | Go           | ${{ steps.build.outputs.go_version }}     |
+          | Frameworks & Tools  | Phoenix      | ${{ steps.build.outputs.phoenix_version }} |
+          | Frameworks & Tools  | Bun          | ${{ steps.build.outputs.bun_version }}      |
+          | Base System         | Rocky Linux  | ${{ steps.build.outputs.rocky_version }}    |
 
           ## Quick Start
 
