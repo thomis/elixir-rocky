@@ -82,12 +82,13 @@ jobs:
               echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
 
               echo "Captured versions from build:"
-              echo "  Erlang/OTP: $ERLANG"
-              echo "  Elixir: $ELIXIR"
-              echo "  Phoenix: $PHOENIX"
-              echo "  Go: $GO"
-              echo "  Bun: $BUN"
-              echo "  Rocky Linux: $ROCKY"
+              echo ""
+              printf "  %-20s %s\n" "Erlang/OTP" "$ERLANG"
+              printf "  %-20s %s\n" "Elixir" "$ELIXIR"
+              printf "  %-20s %s\n" "Phoenix" "$PHOENIX"
+              printf "  %-20s %s\n" "Go" "$GO"
+              printf "  %-20s %s\n" "Bun" "$BUN"
+              printf "  %-20s %s\n" "Rocky Linux" "$ROCKY"
 
               # Save JSON for release asset
               echo "$VERSION_JSON" | jq . > versions.json
