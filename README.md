@@ -1,9 +1,9 @@
 [![CI Build Status](https://github.com/thomis/elixir-rocky/actions/workflows/ci.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-# Elixir Rocky Linux Docker Image
+# Elixir Development Stack on Rocky Linux
 
-A comprehensive Rocky Linux-based Docker image with Erlang, Elixir, Phoenix Framework, Go, and Bun pre-installed. This image provides a production-ready development environment for modern web applications.
+A production-ready Docker image combining Elixir, Phoenix Framework, Go, and Bun on Rocky Linux. Perfect for building scalable web applications, APIs, and microservices with a polyglot development stack.
 
 ## 📦 Container Registry
 
