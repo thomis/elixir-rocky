@@ -1,4 +1,7 @@
 [![CI Build Status](https://github.com/thomis/elixir-rocky/actions/workflows/ci.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/ci.yml)
+[![CD Deploy Status](https://github.com/thomis/elixir-rocky/actions/workflows/cd.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/cd.yml)
+[![Latest Version](https://ghcr-badge.egpl.dev/thomis/elixir-rocky/latest_tag?color=%2344cc11&ignore=latest&label=version&trim=)](https://github.com/thomis/elixir-rocky/pkgs/container/elixir-rocky)
+[![Image Size](https://ghcr-badge.egpl.dev/thomis/elixir-rocky/size?color=%2344cc11&tag=latest&label=image+size&trim=)](https://github.com/thomis/elixir-rocky/pkgs/container/elixir-rocky)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 # Elixir Development Stack on Rocky Linux
