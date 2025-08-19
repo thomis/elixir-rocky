@@ -42,35 +42,48 @@ jobs:
           # Extract JSON versions from build output
           VERSION_JSON=$(grep "::VERSIONS::" build.log | tail -1 | sed 's/.*::VERSIONS::\(.*\)::VERSIONS::.*/\1/')
           
+          # If we didn't get versions from build output (cached), extract from the built image
+          if [ -z "$VERSION_JSON" ] || [ "$VERSION_JSON" = "" ]; then
+            echo "Build was cached, extracting versions from built image..."
+            VERSION_JSON=$(docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json)
+          fi
+          
           if [ -n "$VERSION_JSON" ]; then
-            # Parse JSON to extract versions
-            ERLANG=$(echo "$VERSION_JSON" | jq -r '.erlang')
-            ELIXIR=$(echo "$VERSION_JSON" | jq -r '.elixir')
-            PHOENIX=$(echo "$VERSION_JSON" | jq -r '.phoenix')
-            GO=$(echo "$VERSION_JSON" | jq -r '.go')
-            BUN=$(echo "$VERSION_JSON" | jq -r '.bun')
-            ROCKY=$(echo "$VERSION_JSON" | jq -r '.rocky_linux')
-            
-            # Set outputs for later steps
-            echo "erlang_version=$ERLANG" >> $GITHUB_OUTPUT
-            echo "elixir_version=$ELIXIR" >> $GITHUB_OUTPUT
-            echo "phoenix_version=$PHOENIX" >> $GITHUB_OUTPUT
-            echo "go_version=$GO" >> $GITHUB_OUTPUT
-            echo "bun_version=$BUN" >> $GITHUB_OUTPUT
-            echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
-            
-            echo "Captured versions from build:"
-            echo "  Erlang/OTP: $ERLANG"
-            echo "  Elixir: $ELIXIR"
-            echo "  Phoenix: $PHOENIX"
-            echo "  Go: $GO"
-            echo "  Bun: $BUN"
-            echo "  Rocky Linux: $ROCKY"
-            
-            # Save JSON for potential debugging
-            echo "$VERSION_JSON" > versions.json
+            # Validate JSON before parsing
+            if echo "$VERSION_JSON" | jq empty 2>/dev/null; then
+              # Parse JSON to extract versions
+              ERLANG=$(echo "$VERSION_JSON" | jq -r '.erlang')
+              ELIXIR=$(echo "$VERSION_JSON" | jq -r '.elixir')
+              PHOENIX=$(echo "$VERSION_JSON" | jq -r '.phoenix')
+              GO=$(echo "$VERSION_JSON" | jq -r '.go')
+              BUN=$(echo "$VERSION_JSON" | jq -r '.bun')
+              ROCKY=$(echo "$VERSION_JSON" | jq -r '.rocky_linux')
+              
+              # Set outputs for later steps
+              echo "erlang_version=$ERLANG" >> $GITHUB_OUTPUT
+              echo "elixir_version=$ELIXIR" >> $GITHUB_OUTPUT
+              echo "phoenix_version=$PHOENIX" >> $GITHUB_OUTPUT
+              echo "go_version=$GO" >> $GITHUB_OUTPUT
+              echo "bun_version=$BUN" >> $GITHUB_OUTPUT
+              echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
+              
+              echo "Captured versions from build:"
+              echo "  Erlang/OTP: $ERLANG"
+              echo "  Elixir: $ELIXIR"
+              echo "  Phoenix: $PHOENIX"
+              echo "  Go: $GO"
+              echo "  Bun: $BUN"
+              echo "  Rocky Linux: $ROCKY"
+              
+              # Save JSON for release asset
+              echo "$VERSION_JSON" | jq . > versions.json
+            else
+              echo "Error: Invalid JSON received"
+              echo "Received: $VERSION_JSON"
+              echo "Warning: Could not parse version information"
+            fi
           else
-            echo "Warning: Could not extract version information from build"
+            echo "Warning: Could not extract version information from build or image"
           fi
           
           # Tag as latest as well
