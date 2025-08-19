@@ -34,8 +34,8 @@ RUN ARCH=$(uname -m) && \
     VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | jq -r '.tag_name') && \
     curl -LO "https://github.com/$REPO/releases/download/$VERSION/asdf-$VERSION-$ARCH.tar.gz" && \
     curl -LO "https://github.com/$REPO/releases/download/$VERSION/asdf-$VERSION-$ARCH.tar.gz.md5" && \
-    echo "$(cat asdf-$VERSION-$ARCH.tar.gz.md5) asdf-$VERSION-$ARCH.tar.gz" > asdf-$VERSION-$ARCH.tar.gz.md5 && \
-    md5sum -c "asdf-$VERSION-$ARCH.tar.gz.md5" && \
+    printf "%s  %s\n" "$(cat asdf-$VERSION-$ARCH.tar.gz.md5)" "asdf-$VERSION-$ARCH.tar.gz" > asdf-$VERSION-$ARCH.tar.gz.md5 \
+  md5sum -c "asdf-$VERSION-$ARCH.tar.gz.md5" && \
     rm "asdf-$VERSION-$ARCH.tar.gz.md5" && \
     tar -xzvf "asdf-$VERSION-$ARCH.tar.gz" && \
     mv asdf /usr/local/bin && \
