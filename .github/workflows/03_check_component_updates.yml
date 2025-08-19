@@ -1,4 +1,4 @@
-name: version-check
+name: 03 - Check Component Updates
 
 on:
   schedule:
@@ -173,7 +173,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'cd.yml',
+              workflow_id: '02_build_and_release.yml',
               ref: 'main',
               inputs: {
                 tag_name: '${{ steps.compare.outputs.new_tag }}'
