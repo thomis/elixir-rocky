@@ -126,16 +126,16 @@ jobs:
           This release includes the following components:
           
           ### Runtime & Languages
-          - **Erlang/OTP:** ${ERLANG}
-          - **Elixir:** ${ELIXIR}
-          - **Go:** ${GO}
+          - Erlang/OTP: ${ERLANG}
+          - Elixir: ${ELIXIR}
+          - Go: ${GO}
           
           ### Frameworks & Tools
-          - **Phoenix Framework:** ${PHOENIX}
-          - **Bun:** ${BUN}
+          - Phoenix Framework: ${PHOENIX}
+          - Bun: ${BUN}
           
           ### Base System
-          - **Rocky Linux:** ${ROCKY}
+          - Rocky Linux: ${ROCKY}
           
           ## Quick Start
           
@@ -169,16 +169,16 @@ jobs:
           This release includes the following components:
           
           ### Runtime & Languages
-          - **Erlang/OTP:** ${{ steps.build.outputs.erlang_version }}
-          - **Elixir:** ${{ steps.build.outputs.elixir_version }}
-          - **Go:** ${{ steps.build.outputs.go_version }}
+          - Erlang/OTP: ${{ steps.build.outputs.erlang_version }}
+          - Elixir: ${{ steps.build.outputs.elixir_version }}
+          - Go: ${{ steps.build.outputs.go_version }}
           
           ### Frameworks & Tools
-          - **Phoenix Framework:** ${{ steps.build.outputs.phoenix_version }}
-          - **Bun:** ${{ steps.build.outputs.bun_version }}
+          - Phoenix Framework: ${{ steps.build.outputs.phoenix_version }}
+          - Bun: ${{ steps.build.outputs.bun_version }}
           
           ### Base System
-          - **Rocky Linux:** ${{ steps.build.outputs.rocky_version }}
+          - Rocky Linux: ${{ steps.build.outputs.rocky_version }}
           
           ## Quick Start
           

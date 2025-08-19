@@ -6,11 +6,15 @@ LABEL org.opencontainers.image.authors="thomas.steiner@ikey.ch"
 LABEL org.opencontainers.image.url="https://github.com/thomis/elixir-rocky"
 LABEL org.opencontainers.image.source="https://github.com/thomis/elixir-rocky"
 LABEL org.opencontainers.image.documentation="https://github.com/thomis/elixir-rocky/blob/main/README.md"
-LABEL org.opencontainers.image.vendor="thomis"
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.vendor="ikey.ch"
+# License: This Dockerfile and configurations are MIT. Included software has various licenses.
+LABEL org.opencontainers.image.licenses="MIT AND BSD-3-Clause AND Apache-2.0"
 LABEL org.opencontainers.image.title="Elixir Development Stack on Rocky Linux"
 LABEL org.opencontainers.image.base.name="rockylinux/rockylinux:10"
 LABEL org.opencontainers.image.description="Production-ready development stack with latest Erlang, Elixir, Phoenix Framework, Go, and Bun on Rocky Linux 10. Check /versions.json or /versions.txt for installed versions."
+LABEL org.opencontainers.image.name="elixir-rocky"
+LABEL name="elixir-rocky"
+LABEL vendor="ikey.ch"
 
 RUN dnf -y upgrade
 RUN dnf -y install procps glibc-langpack-en wget make git automake autoconf openssl-devel ncurses-devel gcc gcc-c++ unzip jq
