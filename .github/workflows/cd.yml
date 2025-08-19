@@ -95,7 +95,7 @@ jobs:
           docker push ghcr.io/thomis/elixir-rocky:latest
 
       - name: Generate release notes
-        if: github.event_name == 'workflow_dispatch' && steps.build.outputs.erlang_version != ''
+        if: steps.build.outputs.erlang_version != ''
         run: |
           cat > release_notes.md << EOF
           ## Component Versions
@@ -147,6 +147,19 @@ jobs:
           git tag ${{ env.tag }}
           git push origin ${{ env.tag }}
 
+      - name: Prepare release files
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # Ensure we have release notes
+          if [ ! -f release_notes.md ]; then
+            echo "Docker image published with latest component versions." > release_notes.md
+          fi
+          
+          # Ensure we have versions.json
+          if [ ! -f versions.json ]; then
+            echo '{}' > versions.json
+          fi
+
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
@@ -157,5 +170,15 @@ jobs:
           files: versions.json
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Update existing release with versions
+        if: github.event_name == 'release' && hashFiles('versions.json') != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.tag }}
+          files: versions.json
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
