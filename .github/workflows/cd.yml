@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name for the release (e.g., v1.0.0)'
+        description: 'Tag name for the release (e.g., 1.0.0)'
         required: true
         type: string
+      no_cache:
+        description: 'Force rebuild without cache'
+        required: false
+        type: boolean
+        default: true
   release:
     types: [published]
 
@@ -36,8 +41,17 @@ jobs:
       - name: Build Docker image and capture versions
         id: build
         run: |
+          # Determine cache strategy
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.no_cache }}" = "true" ]; then
+            CACHE_FLAG="--no-cache"
+            echo "Building without cache..."
+          else
+            CACHE_FLAG=""
+            echo "Building with cache..."
+          fi
+          
           # Build the image and capture output
-          docker build . --file Dockerfile --tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} 2>&1 | tee build.log
+          docker build . --file Dockerfile $CACHE_FLAG --tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} 2>&1 | tee build.log
           
           # Extract JSON versions from build output
           VERSION_JSON=$(grep "::VERSIONS::" build.log | tail -1 | sed 's/.*::VERSIONS::\(.*\)::VERSIONS::.*/\1/')
@@ -95,9 +109,61 @@ jobs:
           docker push ghcr.io/thomis/elixir-rocky:latest
 
       - name: Generate release notes
-        if: steps.build.outputs.erlang_version != ''
         run: |
-          cat > release_notes.md << EOF
+          # Try to generate release notes from versions.json if it exists
+          if [ -f versions.json ] && [ -s versions.json ]; then
+            # Extract versions from JSON file
+            ERLANG=$(jq -r '.erlang // "unknown"' versions.json)
+            ELIXIR=$(jq -r '.elixir // "unknown"' versions.json)
+            PHOENIX=$(jq -r '.phoenix // "unknown"' versions.json)
+            GO=$(jq -r '.go // "unknown"' versions.json)
+            BUN=$(jq -r '.bun // "unknown"' versions.json)
+            ROCKY=$(jq -r '.rocky_linux // "unknown"' versions.json)
+            
+            cat > release_notes.md << EOF
+          ## Component Versions
+          
+          This release includes the following components:
+          
+          ### Runtime & Languages
+          - **Erlang/OTP:** ${ERLANG}
+          - **Elixir:** ${ELIXIR}
+          - **Go:** ${GO}
+          
+          ### Frameworks & Tools
+          - **Phoenix Framework:** ${PHOENIX}
+          - **Bun:** ${BUN}
+          
+          ### Base System
+          - **Rocky Linux:** ${ROCKY}
+          
+          ## Quick Start
+          
+          \`\`\`bash
+          # Pull the image
+          docker pull ghcr.io/thomis/elixir-rocky:${{ env.tag }}
+          
+          # Run interactive shell
+          docker run --rm -it ghcr.io/thomis/elixir-rocky:${{ env.tag }} bash
+          
+          # Check installed versions
+          docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.txt
+          
+          # Get versions as JSON
+          docker run --rm ghcr.io/thomis/elixir-rocky:${{ env.tag }} cat /versions.json
+          \`\`\`
+          
+          ## What's Changed
+          Component versions have been updated to their latest stable releases.
+          
+          **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
+          EOF
+            
+            echo "Release notes generated successfully from versions.json"
+            cat release_notes.md
+          elif [ -n "${{ steps.build.outputs.erlang_version }}" ]; then
+            # Fallback to using outputs if versions.json doesn't exist
+            cat > release_notes.md << EOF
           ## Component Versions
           
           This release includes the following components:
@@ -135,9 +201,12 @@ jobs:
           
           **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
           EOF
-          
-          echo "Release notes generated successfully:"
-          cat release_notes.md
+            
+            echo "Release notes generated successfully from outputs"
+            cat release_notes.md
+          else
+            echo "Warning: No version information available for release notes"
+          fi
 
       - name: Create and push tag
         if: github.event_name == 'workflow_dispatch'
