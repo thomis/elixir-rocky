@@ -145,20 +145,20 @@ jobs:
             # Generate next version tag
             LATEST_TAG="${{ steps.current.outputs.latest_tag }}"
             if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "null" ]; then
-              # Parse semantic version and increment
+              # Parse semantic version and increment minor version
               if [[ $LATEST_TAG =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
                 MAJOR="${BASH_REMATCH[1]}"
                 MINOR="${BASH_REMATCH[2]}"
                 PATCH="${BASH_REMATCH[3]}"
-                NEW_PATCH=$((PATCH + 1))
-                NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+                NEW_MINOR=$((MINOR + 1))
+                NEW_TAG="${MAJOR}.${NEW_MINOR}.0"  # Reset patch to 0 when bumping minor
               else
                 # Fallback if tag format is different
-                NEW_TAG="v$(date +%Y.%m.%d)"
+                NEW_TAG="$(date +%Y.%m.%d)"
               fi
             else
               # First release
-              NEW_TAG="v1.0.0"
+              NEW_TAG="1.0.0"
             fi
             
             echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT

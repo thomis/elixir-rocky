@@ -84,7 +84,14 @@ RUN source ~/.bashrc && \
     GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs) && \
     BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs) && \
     ROCKY_VERSION=$(cat /etc/rocky-release | grep -oP '\d+' | head -1) && \
-    echo "{\"erlang\": \"${ERLANG_VERSION}\", \"elixir\": \"${ELIXIR_VERSION}\", \"phoenix\": \"${PHOENIX_VERSION}\", \"go\": \"${GO_VERSION}\", \"bun\": \"${BUN_VERSION}\", \"rocky_linux\": \"${ROCKY_VERSION}\"}" | jq . > /versions.json && \
+    jq -n \
+      --arg erlang "${ERLANG_VERSION}" \
+      --arg elixir "${ELIXIR_VERSION}" \
+      --arg phoenix "${PHOENIX_VERSION}" \
+      --arg go "${GO_VERSION}" \
+      --arg bun "${BUN_VERSION}" \
+      --arg rocky "${ROCKY_VERSION}" \
+      '{erlang: $erlang, elixir: $elixir, phoenix: $phoenix, go: $go, bun: $bun, rocky_linux: $rocky}' > /versions.json && \
     echo "========================================" > /versions.txt && \
     echo "   Elixir Development Stack Versions" >> /versions.txt && \
     echo "========================================" >> /versions.txt && \
