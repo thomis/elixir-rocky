@@ -1,5 +1,7 @@
 [![Build and Test](https://github.com/thomis/elixir-rocky/actions/workflows/01_build_and_test.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/01_build_and_test.yml)
 [![Build and Release](https://github.com/thomis/elixir-rocky/actions/workflows/02_build_and_release.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/02_build_and_release.yml)
+[![Check Component Updates](https://github.com/thomis/elixir-rocky/actions/workflows/03_check_component_updates.yml/badge.svg)](https://github.com/thomis/elixir-rocky/actions/workflows/03_check_component_updates.yml)
+
 [![Latest Version](https://ghcr-badge.egpl.dev/thomis/elixir-rocky/latest_tag?color=%2344cc11&ignore=latest&label=version&trim=)](https://github.com/thomis/elixir-rocky/pkgs/container/elixir-rocky)
 [![Image Size](https://ghcr-badge.egpl.dev/thomis/elixir-rocky/size?color=%2344cc11&tag=latest&label=image+size&trim=)](https://github.com/thomis/elixir-rocky/pkgs/container/elixir-rocky)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
