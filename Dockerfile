@@ -67,7 +67,7 @@ RUN source ~/.bashrc && \
     ERLANG_VERSION=$(asdf list erlang | tail -1 | xargs) && \
     ERLANG_MAJOR=$(echo $ERLANG_VERSION | cut -d. -f1) && \
     echo "Erlang installed: ${ERLANG_VERSION} (OTP ${ERLANG_MAJOR})" && \
-    ELIXIR_VERSION=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+-otp-${ERLANG_MAJOR}$" | tail -1) && \
+    ELIXIR_VERSION=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?-otp-${ERLANG_MAJOR}$" | tail -1) && \
     echo "Installing Elixir ${ELIXIR_VERSION} for OTP ${ERLANG_MAJOR}" && \
     asdf install elixir ${ELIXIR_VERSION}
 RUN asdf install golang latest
