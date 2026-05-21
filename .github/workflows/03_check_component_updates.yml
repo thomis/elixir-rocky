@@ -34,11 +34,7 @@ jobs:
           # For Elixir, we need to match with OTP version
           # Get the major version of Erlang for Elixir compatibility
           ERLANG_MAJOR=$(echo $LATEST_ERLANG | cut -d. -f1)
-          LATEST_ELIXIR=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+-otp-${ERLANG_MAJOR}$" | tail -1 | xargs)
-          # Fallback if no exact OTP match
-          if [ -z "$LATEST_ELIXIR" ]; then
-            LATEST_ELIXIR=$(asdf list all elixir | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
-          fi
+          LATEST_ELIXIR=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?-otp-${ERLANG_MAJOR}$" | tail -1 | xargs)
           
           # Get latest Go version
           LATEST_GO=$(asdf list all golang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
