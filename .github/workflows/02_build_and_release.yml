@@ -69,7 +69,6 @@ jobs:
               ERLANG=$(echo "$VERSION_JSON" | jq -r '.erlang')
               ELIXIR=$(echo "$VERSION_JSON" | jq -r '.elixir')
               PHOENIX=$(echo "$VERSION_JSON" | jq -r '.phoenix')
-              GO=$(echo "$VERSION_JSON" | jq -r '.go')
               BUN=$(echo "$VERSION_JSON" | jq -r '.bun')
               ROCKY=$(echo "$VERSION_JSON" | jq -r '.rocky_linux')
 
@@ -77,7 +76,6 @@ jobs:
               echo "erlang_version=$ERLANG" >> $GITHUB_OUTPUT
               echo "elixir_version=$ELIXIR" >> $GITHUB_OUTPUT
               echo "phoenix_version=$PHOENIX" >> $GITHUB_OUTPUT
-              echo "go_version=$GO" >> $GITHUB_OUTPUT
               echo "bun_version=$BUN" >> $GITHUB_OUTPUT
               echo "rocky_version=$ROCKY" >> $GITHUB_OUTPUT
 
@@ -86,7 +84,6 @@ jobs:
               printf "  %-20s %s\n" "Erlang/OTP" "$ERLANG"
               printf "  %-20s %s\n" "Elixir" "$ELIXIR"
               printf "  %-20s %s\n" "Phoenix" "$PHOENIX"
-              printf "  %-20s %s\n" "Go" "$GO"
               printf "  %-20s %s\n" "Bun" "$BUN"
               printf "  %-20s %s\n" "Rocky Linux" "$ROCKY"
 
@@ -117,7 +114,6 @@ jobs:
             ERLANG=$(jq -r '.erlang // "unknown"' versions.json)
             ELIXIR=$(jq -r '.elixir // "unknown"' versions.json)
             PHOENIX=$(jq -r '.phoenix // "unknown"' versions.json)
-            GO=$(jq -r '.go // "unknown"' versions.json)
             BUN=$(jq -r '.bun // "unknown"' versions.json)
             ROCKY=$(jq -r '.rocky_linux // "unknown"' versions.json)
 
@@ -130,7 +126,6 @@ jobs:
           |---------------------|--------------|-------------|
           | Runtime & Languages | Erlang/OTP   | ${ERLANG}   |
           | Runtime & Languages | Elixir       | ${ELIXIR}   |
-          | Runtime & Languages | Go           | ${GO}       |
           | Frameworks & Tools  | Phoenix      | ${PHOENIX}  |
           | Frameworks & Tools  | Bun          | ${BUN}      |
           | Base System         | Rocky Linux  | ${ROCKY}    |
@@ -170,7 +165,6 @@ jobs:
           |---------------------|--------------|-------------|
           | Runtime & Languages | Erlang/OTP   | ${{ steps.build.outputs.erlang_version }} |
           | Runtime & Languages | Elixir       | ${{ steps.build.outputs.elixir_version }} |
-          | Runtime & Languages | Go           | ${{ steps.build.outputs.go_version }}     |
           | Frameworks & Tools  | Phoenix      | ${{ steps.build.outputs.phoenix_version }} |
           | Frameworks & Tools  | Bun          | ${{ steps.build.outputs.bun_version }}      |
           | Base System         | Rocky Linux  | ${{ steps.build.outputs.rocky_version }}    |

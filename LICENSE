@@ -28,7 +28,6 @@ The resulting Docker image contains software with various licenses including:
 - Erlang/OTP: Apache-2.0
 - Elixir: Apache-2.0
 - Phoenix Framework: MIT
-- Go: BSD-3-Clause
 - Bun: MIT
 - Other included software: Various open source licenses
 

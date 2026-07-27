@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.vendor="ikey.ch"
 LABEL org.opencontainers.image.licenses="MIT AND BSD-3-Clause AND Apache-2.0"
 LABEL org.opencontainers.image.title="Elixir Development Stack on Rocky Linux"
 LABEL org.opencontainers.image.base.name="rockylinux/rockylinux:10"
-LABEL org.opencontainers.image.description="Production-ready development stack with latest Erlang, Elixir, Phoenix Framework, Go, and Bun on Rocky Linux 10. Check /versions.json or /versions.txt for installed versions."
+LABEL org.opencontainers.image.description="Production-ready development stack with latest Erlang, Elixir, Phoenix Framework, and Bun on Rocky Linux 10. Check /versions.json or /versions.txt for installed versions."
 LABEL org.opencontainers.image.name="elixir-rocky"
 LABEL name="elixir-rocky"
 LABEL vendor="ikey.ch"
@@ -55,10 +55,9 @@ RUN ARCH=$(uname -m) && \
 
 RUN echo -e '\nexport PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' >> ~/.bashrc
 
-# erlang, elixir, nodejs, go
+# erlang, elixir, bun
 RUN asdf plugin add erlang
 RUN asdf plugin add elixir
-RUN asdf plugin add golang
 RUN asdf plugin add bun
 
 RUN asdf install erlang latest
@@ -70,7 +69,6 @@ RUN source ~/.bashrc && \
     ELIXIR_VERSION=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?-otp-${ERLANG_MAJOR}$" | tail -1) && \
     echo "Installing Elixir ${ELIXIR_VERSION} for OTP ${ERLANG_MAJOR}" && \
     asdf install elixir ${ELIXIR_VERSION}
-RUN asdf install golang latest
 RUN asdf install bun latest
 
 RUN asdf set --home erlang latest
@@ -78,7 +76,6 @@ RUN asdf set --home erlang latest
 RUN source ~/.bashrc && \
     ELIXIR_VERSION=$(asdf list elixir | tail -1 | xargs) && \
     asdf set --home elixir ${ELIXIR_VERSION}
-RUN asdf set --home golang latest
 RUN asdf set --home bun latest
 
 # Source bashrc to ensure asdf shims are in PATH
@@ -94,17 +91,15 @@ RUN source ~/.bashrc && \
     ERLANG_VERSION=$(asdf list erlang | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//' ) && \
     ELIXIR_VERSION=$(asdf list elixir | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
     PHOENIX_VERSION=$(mix phx.new --version | grep "Phoenix installer v" | cut -d'v' -f2) && \
-    GO_VERSION=$(asdf list golang | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
     BUN_VERSION=$(asdf list bun | grep -v "No versions" | tail -1 | xargs | sed 's/^\*//') && \
     ROCKY_VERSION=$(cat /etc/rocky-release | grep -oP '\d+' | head -1) && \
     jq -n \
       --arg erlang "${ERLANG_VERSION}" \
       --arg elixir "${ELIXIR_VERSION}" \
       --arg phoenix "${PHOENIX_VERSION}" \
-      --arg go "${GO_VERSION}" \
       --arg bun "${BUN_VERSION}" \
       --arg rocky "${ROCKY_VERSION}" \
-      '{erlang: $erlang, elixir: $elixir, phoenix: $phoenix, go: $go, bun: $bun, rocky_linux: $rocky}' > /versions.json && \
+      '{erlang: $erlang, elixir: $elixir, phoenix: $phoenix, bun: $bun, rocky_linux: $rocky}' > /versions.json && \
     echo "========================================" > /versions.txt && \
     echo "   Elixir Development Stack Versions" >> /versions.txt && \
     echo "========================================" >> /versions.txt && \
@@ -112,7 +107,6 @@ RUN source ~/.bashrc && \
     echo "Runtime & Languages:" >> /versions.txt && \
     echo "  • Erlang/OTP:        ${ERLANG_VERSION}" >> /versions.txt && \
     echo "  • Elixir:            ${ELIXIR_VERSION}" >> /versions.txt && \
-    echo "  • Go:                ${GO_VERSION}" >> /versions.txt && \
     echo "" >> /versions.txt && \
     echo "Frameworks & Tools:" >> /versions.txt && \
     echo "  • Phoenix Framework: ${PHOENIX_VERSION}" >> /versions.txt && \

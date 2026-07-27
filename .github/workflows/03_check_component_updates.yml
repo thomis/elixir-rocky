@@ -24,7 +24,6 @@ jobs:
           # Add plugins
           asdf plugin add erlang
           asdf plugin add elixir
-          asdf plugin add golang
           asdf plugin add bun
           
           # Get latest stable versions available
@@ -35,9 +34,6 @@ jobs:
           # Get the major version of Erlang for Elixir compatibility
           ERLANG_MAJOR=$(echo $LATEST_ERLANG | cut -d. -f1)
           LATEST_ELIXIR=$(asdf list all elixir | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?-otp-${ERLANG_MAJOR}$" | tail -1 | xargs)
-          
-          # Get latest Go version
-          LATEST_GO=$(asdf list all golang | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1 | xargs)
           
           # Get latest Bun version
           LATEST_BUN=$(asdf list all bun | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | xargs)
@@ -51,7 +47,6 @@ jobs:
             "erlang": "$LATEST_ERLANG",
             "elixir": "$LATEST_ELIXIR",
             "phoenix": "$LATEST_PHOENIX",
-            "go": "$LATEST_GO",
             "bun": "$LATEST_BUN"
           }
           EOF
@@ -124,8 +119,8 @@ jobs:
           
           # Compare the JSON files (excluding rocky_linux which might only be in current.json)
           # Extract only the component versions we care about for comparison
-          LATEST_COMPONENTS=$(cat latest.json | jq '{erlang, elixir, phoenix, go, bun}')
-          CURRENT_COMPONENTS=$(cat current.json | jq '{erlang, elixir, phoenix, go, bun}')
+          LATEST_COMPONENTS=$(cat latest.json | jq '{erlang, elixir, phoenix, bun}')
+          CURRENT_COMPONENTS=$(cat current.json | jq '{erlang, elixir, phoenix, bun}')
           
           echo "$LATEST_COMPONENTS" > latest_components.json
           echo "$CURRENT_COMPONENTS" > current_components.json
