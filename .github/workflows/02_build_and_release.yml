@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: true
+      force_release:
+        description: 'Create release even if versions are unchanged'
+        required: false
+        type: boolean
+        default: false
   release:
     types: [published]
 
@@ -101,7 +106,37 @@ jobs:
           # Tag as latest as well
           docker tag ghcr.io/thomis/elixir-rocky:${{ env.tag }} ghcr.io/thomis/elixir-rocky:latest
 
+      - name: Compare with latest release
+        id: changes
+        run: |
+          # Download versions.json from the current latest release and compare
+          # with what we just built. Skip the release if nothing changed.
+          if curl -L -f -o previous-versions.json \
+              "https://github.com/${{ github.repository }}/releases/latest/download/versions.json" 2>/dev/null; then
+            echo "Previous release versions:"
+            jq . previous-versions.json
+          else
+            echo "No previous versions.json found, treating as changed."
+            echo '{}' > previous-versions.json
+          fi
+
+          if [ -f versions.json ] && jq --sort-keys . versions.json > new.sorted && \
+             jq --sort-keys . previous-versions.json > previous.sorted && \
+             diff -q new.sorted previous.sorted > /dev/null 2>&1; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No component changes compared to the latest release."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Component changes detected (or no previous release to compare)."
+          fi
+
+          if [ "${{ github.event.inputs.force_release }}" = "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "force_release is set, release will be created regardless."
+          fi
+
       - name: Push Docker images
+        if: github.event_name != 'workflow_dispatch' || steps.changes.outputs.changed == 'true'
         run: |
           docker push ghcr.io/thomis/elixir-rocky:${{ env.tag }}
           docker push ghcr.io/thomis/elixir-rocky:latest
@@ -116,6 +151,32 @@ jobs:
             PHOENIX=$(jq -r '.phoenix // "unknown"' versions.json)
             BUN=$(jq -r '.bun // "unknown"' versions.json)
             ROCKY=$(jq -r '.rocky_linux // "unknown"' versions.json)
+
+            # Build "What's Changed" entries by diffing against the previous release
+            : > changes.md
+            if [ -f previous-versions.json ]; then
+              for key in erlang elixir phoenix bun rocky_linux; do
+                case $key in
+                  erlang) LABEL="Erlang/OTP";;
+                  elixir) LABEL="Elixir";;
+                  phoenix) LABEL="Phoenix";;
+                  bun) LABEL="Bun";;
+                  rocky_linux) LABEL="Rocky Linux";;
+                esac
+                OLD=$(jq -r --arg k "$key" '.[$k] // empty' previous-versions.json)
+                NEW=$(jq -r --arg k "$key" '.[$k] // empty' versions.json)
+                if [ -n "$NEW" ] && [ "$OLD" != "$NEW" ]; then
+                  if [ -n "$OLD" ]; then
+                    echo "- ${LABEL}: ${OLD} → ${NEW}" >> changes.md
+                  else
+                    echo "- ${LABEL}: ${NEW} (new)" >> changes.md
+                  fi
+                fi
+              done
+            fi
+            if [ ! -s changes.md ]; then
+              echo "No component version changes compared to the previous release." > changes.md
+            fi
 
             cat > release_notes.md << EOF
           ## Component Versions
@@ -147,7 +208,7 @@ jobs:
           \`\`\`
 
           ## What's Changed
-          Component versions have been updated to their latest stable releases.
+          $(cat changes.md)
 
           **Full Changelog**: https://github.com/thomis/elixir-rocky/commits/main
           EOF
@@ -198,7 +259,7 @@ jobs:
           fi
 
       - name: Create and push tag
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && steps.changes.outputs.changed == 'true'
         run: |
           # Always delete local tag first
           git tag -d ${{ env.tag }} 2>/dev/null || true
@@ -209,7 +270,7 @@ jobs:
           git push origin ${{ env.tag }}
 
       - name: Prepare release files
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && steps.changes.outputs.changed == 'true'
         run: |
           # Ensure we have release notes
           if [ ! -f release_notes.md ]; then
@@ -222,7 +283,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && steps.changes.outputs.changed == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.tag }}
